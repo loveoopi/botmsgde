@@ -14,7 +14,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Configuration
-DELETE_DELAY = 300  # 300 seconds
+DELETE_DELAY = 10  # 10 seconds
 
 class TelegramMessageDeleter:
     def __init__(self):
@@ -56,7 +56,7 @@ class TelegramMessageDeleter:
                         logger.info(f"📝 Message: {event.text[:100] if event.text else 'Media message'}")
                         logger.info(f"⏰ Will delete in {DELETE_DELAY} seconds...")
                         
-                        # Wait 300 seconds then delete
+                        # Wait 10 seconds then delete
                         await asyncio.sleep(DELETE_DELAY)
                         
                         try:
@@ -64,10 +64,6 @@ class TelegramMessageDeleter:
                             logger.info(f"✅ Successfully deleted bot message from {event.sender.first_name} after {DELETE_DELAY} seconds")
                         except Exception as delete_error:
                             logger.error(f"❌ Failed to delete message: {delete_error}")
-                    
-                    # Ignore user messages (don't delete them)
-                    elif not event.sender.bot:
-                        logger.debug(f"👤 User message from {event.sender.first_name} - IGNORED (users are safe)")
                             
                 except Exception as e:
                     logger.error(f"Error in message handler: {e}")
@@ -101,10 +97,9 @@ class TelegramMessageDeleter:
                 creator_text += "This Bot is created by [@itz_fizzyll](https://t.me/itz_fizzyll)\n\n"
                 creator_text += "**Features:**\n"
                 creator_text += "• Automatically detects bot messages\n"
-                creator_text += f"• Deletes bot messages after {DELETE_DELAY} seconds\n"
-                creator_text += "• User messages are SAFE and won't be deleted\n"
+                creator_text += f"• Deletes messages after {DELETE_DELAY} seconds\n"
                 creator_text += "• Works in groups where I'm admin\n"
-                creator_text += "• Keeps my own messages safe\n\n"
+                creator_text += "• Monitors all bot activities\n\n"
                 creator_text += "**Requirements:**\n"
                 creator_text += "• Bot must be admin with delete permissions\n"
                 creator_text += "• User account must be admin with delete permissions\n\n"
@@ -112,37 +107,19 @@ class TelegramMessageDeleter:
                 
                 await event.reply(creator_text, link_preview=False)
             
-            # Add help command
-            @self.bot_client.on(events.NewMessage(pattern='/help'))
-            async def help_handler(event):
-                help_text = "🆘 **Help Guide**\n\n"
-                help_text += "**What I do:**\n"
-                help_text += f"• I delete ONLY bot messages after {DELETE_DELAY} seconds\n"
-                help_text += "• User messages are COMPLETELY SAFE\n"
-                help_text += "• My own messages are also safe\n"
-                help_text += "• Works automatically in all groups where I'm admin\n\n"
-                help_text += "**Commands:**\n"
-                help_text += "/start - Check bot status\n"
-                help_text += "/help - Show this help message\n\n"
-                help_text += "**Note:** Make sure both bot and user account have admin rights with delete permissions!"
-                
-                await event.reply(help_text, link_preview=False)
-            
             # Also send creator info when bot is added to group
             @self.bot_client.on(events.ChatAction())
             async def chat_action_handler(event):
                 if event.user_added and await event.get_user() == self.bot_info:
                     creator_text = "🤖 **Thanks for adding me!**\n\n"
                     creator_text += "This Bot is created by [@itz_fizzyll](https://t.me/itz_fizzyll)\n\n"
-                    creator_text += "I will automatically delete **ONLY bot messages** "
+                    creator_text += "I will automatically delete other bot messages "
                     creator_text += f"**{DELETE_DELAY} seconds** after they are sent.\n\n"
-                    creator_text += "**✅ User messages are SAFE and won't be deleted!**\n\n"
                     creator_text += "**Make sure to:**\n"
                     creator_text += "1. Promote me as admin\n"
                     creator_text += "2. Give me 'Delete Messages' permission\n"
                     creator_text += "3. Also promote the user account as admin\n\n"
-                    creator_text += "Use /start to check my status\n"
-                    creator_text += "Use /help for more information"
+                    creator_text += "Use /start to check my status"
                     
                     await event.reply(creator_text, link_preview=False)
 
@@ -186,10 +163,8 @@ class TelegramMessageDeleter:
             
             if await self.check_connections():
                 logger.info("🚀 Bot Message Deleter is now running!")
-                logger.info("📝 Monitoring for BOT messages only...")
+                logger.info("📝 Monitoring for bot messages...")
                 logger.info(f"⏰ Bot messages will be deleted after {DELETE_DELAY} seconds")
-                logger.info("✅ User messages are SAFE and won't be deleted")
-                logger.info("🛡️ Bot's own messages are protected from deletion")
                 logger.info("👨‍💻 Created by @itz_fizzyll")
                 
                 # Keep both clients running
@@ -223,10 +198,8 @@ async def main():
 
 if __name__ == "__main__":
     # For Heroku - simple execution
-    logger.info("🚀 Starting Bot Message Deleter...")
+    logger.info("🚀 Starting Telegram Bot Message Deleter...")
     logger.info(f"⏰ Deletion delay set to: {DELETE_DELAY} seconds")
-    logger.info("🎯 Target: ONLY bot messages")
-    logger.info("✅ Safe: User messages and bot's own messages")
     logger.info("👨‍💻 Created by @itz_fizzyll")
     
     try:
